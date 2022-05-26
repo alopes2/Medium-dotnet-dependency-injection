@@ -1,3 +1,4 @@
+using DependencyInjection.Core;
 using DependencyInjection.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,10 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddTransient<TransientService>();
-builder.Services.AddScoped<ScopedService>();
-builder.Services.AddSingleton<SingletonService>();
-builder.Services.AddSingleton<SingletonWithTransientService>();
+builder.Services.AddTransient<ITransientService, TransientService>();
+builder.Services.AddScoped<IScopedService, ScopedService>();
+builder.Services.AddSingleton<ISingletonService, SingletonService>();
+builder.Services.AddSingleton<ISingletonWithTransientService, SingletonWithTransientService>();
 
 var app = builder.Build();
 
@@ -23,7 +24,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/transient", (TransientService service, TransientService secondService) =>
+app.MapGet("/transient", (ITransientService service, ITransientService secondService) =>
 {
     var first = service.Random;
     var second = secondService.Random;
@@ -38,7 +39,7 @@ app.MapGet("/transient", (TransientService service, TransientService secondServi
 })
 .WithName("GetTransient");
 
-app.MapGet("/scoped", (ScopedService service, ScopedService secondService) =>
+app.MapGet("/scoped", (IScopedService service, IScopedService secondService) =>
 {
     var first = service.Random;
     var second = secondService.Random;
@@ -53,25 +54,25 @@ app.MapGet("/scoped", (ScopedService service, ScopedService secondService) =>
 })
 .WithName("GetScoped");
 
-app.MapGet("/singleton", (SingletonService service) =>
+app.MapGet("/singleton", (ISingletonService service) =>
 {
     return service.Random;
 })
 .WithName("GetSingleton");
 
-app.MapGet("/transient-singleton", (SingletonWithTransientService service) =>
+app.MapGet("/transient-singleton", (ISingletonWithTransientService service) =>
 {
     return service.TransientServiceRandomNumber;
 })
 .WithName("GetSingletonWithTransient");
 
 app.MapGet("/all", (
-    TransientService firstTransient,
-    TransientService secondTransient,
-    ScopedService firstScoped,
-    ScopedService secondScoped,
-    SingletonService singleton,
-    SingletonWithTransientService singletonWithTransientService) =>
+    ITransientService firstTransient,
+    ITransientService secondTransient,
+    IScopedService firstScoped,
+    IScopedService secondScoped,
+    ISingletonService singleton,
+    ISingletonWithTransientService singletonWithTransientService) =>
 {
     var result = new {
         FirstTransient = firstTransient.Random,

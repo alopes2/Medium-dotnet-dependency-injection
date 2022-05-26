@@ -1,12 +1,14 @@
+using DependencyInjection.Core;
+
 namespace DependencyInjection.Services;
 
-public class SingletonWithTransientService
+public class SingletonWithTransientService : ISingletonWithTransientService
 {
-    private readonly TransientService _transientService;
+    private readonly ITransientService _transientService;
 
     public int TransientServiceRandomNumber { get => _transientService.Random; }
 
-    public SingletonWithTransientService(TransientService transientService)
+    public SingletonWithTransientService(ITransientService transientService)
     {
         _transientService = transientService;
     }
