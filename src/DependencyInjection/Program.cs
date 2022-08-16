@@ -1,3 +1,4 @@
+using System.Reflection;
 using DependencyInjection.Core;
 using DependencyInjection.Services;
 
@@ -12,6 +13,10 @@ builder.Services.AddTransient<ITransientService, TransientService>();
 builder.Services.AddScoped<IScopedService, ScopedService>();
 builder.Services.AddSingleton<ISingletonService, SingletonService>();
 builder.Services.AddSingleton<ISingletonWithTransientService, SingletonWithTransientService>();
+
+
+builder.Services.AddTransient<IService, MyService>();
+builder.Services.AddTransient<IService, AnotherService>();
 
 var app = builder.Build();
 
@@ -86,5 +91,27 @@ app.MapGet("/all", (
     return result;
 })
 .WithName("GetAll");
+
+app.MapGet("/multiple-injection", (IEnumerable<IService> services) =>
+{
+    return services.Select(s => s.GetName());
+})
+.WithName("GetMultipleInjection");
+
+app.MapGet("/myservice-injection", (IEnumerable<IService> services) =>
+{
+    var myService = services.FirstOrDefault(s => Type.Equals(s.GetType(), typeof(MyService)));
+    return myService.GetName();
+})
+.WithName("GetMyServiceInjection");
+
+app.MapGet("/anotherservice-injection", (IEnumerable<IService> services) =>
+{
+    var myService = services.FirstOrDefault(s => Type.Equals(s.GetType(), typeof(AnotherService)));
+    return myService.GetName();
+})
+.WithName("GetAnotherServiceInjection");
+
+
 
 app.Run();
